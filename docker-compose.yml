@@ -1,0 +1,19 @@
+services:
+  gateqay-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '${PORT}:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: ${NODE_ENV}
+    command: npm run start:dev
+    networks:
+      - game-hub
+
+networks:
+  game-hub:
+    external: true
