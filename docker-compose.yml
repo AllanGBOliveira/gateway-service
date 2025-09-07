@@ -25,8 +25,8 @@ services:
     hostname: rabbitmq-server
     container_name: rabbitmq-container
     ports:
-      - '8080:15672'
-      - '5672:5672'
+      - '${RABBITMQ_DEFAULT_UI_PORT}:15672'
+      - '${RABBITMQ_DEFAULT_PORT}:5672'
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}

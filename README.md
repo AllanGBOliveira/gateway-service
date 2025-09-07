@@ -25,6 +25,52 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## API Testing with Postman
+
+Este projeto inclui uma collection completa do Postman para testar todos os endpoints da API.
+
+### Arquivos da Collection
+
+- `gateway-service.postman_collection.json` - Collection principal com todos os endpoints
+- `gateway-service.postman_environment.json` - Variáveis de ambiente para diferentes contextos
+
+### Como Importar no Postman
+
+1. **Importar a Collection:**
+   - Abra o Postman
+   - Clique em "Import" no canto superior esquerdo
+   - Selecione o arquivo `gateway-service.postman_collection.json`
+
+2. **Importar o Environment:**
+   - No Postman, clique no ícone de engrenagem (⚙️) no canto superior direito
+   - Selecione "Import"
+   - Selecione o arquivo `gateway-service.postman_environment.json`
+
+3. **Configurar Variáveis:**
+   - Selecione o environment "Gateway Service Environment"
+   - Ajuste a variável `baseUrl` conforme necessário (padrão: http://localhost:3000)
+
+### Endpoints Disponíveis
+
+#### Health Check
+- `GET /` - Verificação de saúde da aplicação
+
+#### Authentication
+- `POST /auth/login` - Login de usuário
+- `POST /auth/register` - Registro de novo usuário
+
+#### Games
+- `GET /games/{id}` - Buscar detalhes de um jogo específico
+- `POST /games` - Criar um novo jogo (evento)
+- `POST /games/{id}/delete` - Deletar um jogo (evento)
+
+### Notas Importantes
+
+- **Microservices**: Este gateway se comunica com microservices via RabbitMQ
+- **Timeout**: Requests têm timeout de 5 segundos configurado
+- **Padrões**: GET requests usam request-response, POST requests usam eventos (fire-and-forget)
+- **Testes Automáticos**: A collection inclui verificações de tempo de resposta e JSON válido
+
 ## Project setup
 
 ```bash

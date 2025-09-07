@@ -9,7 +9,9 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         name: 'GAMES_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://meu_usuario:minha_senha@rabbitmq:5672'],
+          urls: [
+            `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@rabbitmq:${process.env.RABBITMQ_DEFAULT_PORT}`,
+          ],
           queue: 'games_queue',
           queueOptions: {
             durable: true,
