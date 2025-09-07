@@ -1,98 +1,203 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🌐 Gateway Service
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API Gateway para arquitetura de microservices com **autenticação JWT** e **comunicação RabbitMQ**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🎯 O que faz
 
-## Description
+- **Gateway HTTP** para microservices (Auth + Games)
+- **Autenticação JWT** com validação via RabbitMQ
+- **Rotas protegidas** com guards automáticos
+- **Comunicação assíncrona** via RabbitMQ
+- **Docker** ready com hot reload
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## ⚡ Quick Start
 
 ```bash
-$ npm install
+# 1. Clonar e instalar
+git clone <repo>
+cd gateway-service
+npm install
+
+# 2. Configurar .env
+cp .env.example .env
+
+# 3. Rodar com Docker
+docker compose up
+
+# 4. Testar
+curl http://localhost:3000/health
 ```
 
-## Compile and run the project
+## 📡 API Routes
+
+### **🔓 Públicas (sem autenticação)**
+```bash
+POST /auth/login      # Login → JWT token
+POST /auth/register   # Registro → JWT token  
+POST /auth/validate   # Validar token
+GET  /health          # Health check
+```
+
+### **🔒 Protegidas (requer JWT)**
+```bash
+GET    /users          # Listar usuários
+GET    /users/profile  # Perfil do usuário logado
+GET    /users/:id      # Buscar usuário por ID
+PATCH  /users/:id      # Atualizar usuário
+DELETE /users/:id      # Deletar usuário
+```
+
+### **🎮 Games**
+```bash
+GET  /games/:id        # Buscar jogo
+POST /games            # Criar jogo
+POST /games/:id/delete # Deletar jogo
+```
+
+## 🔑 Autenticação
+
+**Header obrigatório para rotas protegidas:**
+```
+Authorization: Bearer <jwt-token>
+```
+
+**Exemplo de login:**
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@email.com","password":"senha123"}'
+```
+
+## 🧪 Postman Collection
+
+**Arquivos:**
+- `gateway-service.postman_collection.json` - Todos os endpoints
+- `gateway-service.postman_environment.json` - Variáveis de ambiente
+
+**Importar:**
+1. Postman → Import → Selecionar arquivos
+2. Configurar environment: `baseUrl = http://localhost:3000`
+3. Testar endpoints
+
+**Endpoints incluídos:**
+- ✅ Health check
+- ✅ Auth (login, register, validate)
+- ✅ Users (CRUD completo com JWT)
+- ✅ Games (buscar, criar, deletar)
+- ✅ Testes automáticos (response time, JSON validation)
+
+## 🐳 Docker
 
 ```bash
-# development
-$ npm run start
+# Rodar tudo
+docker compose up
 
-# watch mode
-$ npm run start:dev
+# Rebuild
+docker compose up --build
 
-# production mode
-$ npm run start:prod
+# Logs
+docker compose logs -f gateway-service
 ```
 
-## Run tests
+## 🔧 Desenvolvimento
 
 ```bash
-# unit tests
-$ npm run test
+# Instalar dependências
+npm install
 
-# e2e tests
-$ npm run test:e2e
+# Desenvolvimento (hot reload)
+npm run start:dev
 
-# test coverage
-$ npm run test:cov
+# Build
+npm run build
+
+# Produção
+npm run start:prod
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 🧪 Testes
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Coverage
+npm run test:cov
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 🔌 Microservices
 
-## Resources
+**Comunicação via RabbitMQ:**
+- **Auth Service** → `auth_queue`
+- **Games Service** → `games_queue`
 
-Check out a few resources that may come in handy when working with NestJS:
+**Padrão híbrido:**
+- **Request-Response** → Rotas síncronas (GET, autenticação)
+- **Event Pattern** → Rotas assíncronas (POST, eventos)
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 📋 Variáveis de Ambiente
 
-## Support
+```env
+# Server
+PORT=3000
+NODE_ENV=development
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# RabbitMQ
+RABBITMQ_DEFAULT_USER=meu_usuario
+RABBITMQ_DEFAULT_PASS=minha_senha
+RABBITMQ_DEFAULT_PORT=5672
+RABBITMQ_DEFAULT_UI_PORT=15672
 
-## Stay in touch
+# Services
+AUTH_SERVICE_HOST=auth-service
+AUTH_SERVICE_PORT=3001
+GAMES_SERVICE_HOST=games-service
+GAMES_SERVICE_PORT=3002
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🏗️ Arquitetura
 
-## License
+```
+Cliente HTTP → Gateway → JWT Guard → Microservice (RabbitMQ) → Response
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+**Fluxo de autenticação:**
+1. Cliente faz login → recebe JWT
+2. Rotas protegidas → Gateway valida JWT via Auth Service
+3. JWT válido → encaminha para microservice responsável
+4. JWT inválido → retorna 401 Unauthorized
+
+## 📚 Tech Stack
+
+- **NestJS** - Framework Node.js
+- **TypeScript** - Linguagem tipada
+- **RabbitMQ** - Message broker
+- **Docker** - Containerização
+- **JWT** - Autenticação
+- **ConfigService** - Configuração
+
+## 🔍 Troubleshooting
+
+**Gateway não conecta no RabbitMQ:**
+```bash
+# Verificar se RabbitMQ está rodando
+docker compose logs rabbitmq
+
+# Verificar network
+docker network ls | grep game-hub
+```
+
+**Erro 401 em rotas protegidas:**
+- Verificar se token JWT está no header `Authorization: Bearer <token>`
+- Verificar se Auth Service está respondendo
+
+**Timeout em microservices:**
+- Verificar se microservices estão na mesma network Docker
+- Verificar logs dos containers
+
+## 📄 License
+
+MIT

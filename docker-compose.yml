@@ -11,22 +11,23 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
-      GAMES_SERVICE_URL: ${GAMES_SERVICE_URL}
-      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
       AUTH_SERVICE_PORT: ${AUTH_SERVICE_PORT}
       GAMES_SERVICE_PORT: ${GAMES_SERVICE_PORT}
       GAMES_SERVICE_HOST: ${GAMES_SERVICE_HOST}
       AUTH_SERVICE_HOST: ${AUTH_SERVICE_HOST}
+      RABBITMQ_DEFAULT_PORT: ${RABBITMQ_DEFAULT_PORT}
+      RABBITMQ_DEFAULT_UI_PORT: ${RABBITMQ_DEFAULT_UI_PORT}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     command: npm run start:dev
     networks:
       - game-hub
   rabbitmq:
     image: rabbitmq:3-management
     hostname: rabbitmq-server
-    container_name: rabbitmq-container
     ports:
-      - '8080:15672'
-      - '5672:5672'
+      - '${RABBITMQ_DEFAULT_UI_PORT}:15672'
+      - '${RABBITMQ_DEFAULT_PORT}:5672'
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
