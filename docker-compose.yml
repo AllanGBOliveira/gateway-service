@@ -1,5 +1,5 @@
 services:
-  gateqay-service:
+  gateway-service:
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,10 +10,35 @@ services:
       - /app/node_modules
     environment:
       NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT}
+      GAMES_SERVICE_URL: ${GAMES_SERVICE_URL}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
+      AUTH_SERVICE_PORT: ${AUTH_SERVICE_PORT}
+      GAMES_SERVICE_PORT: ${GAMES_SERVICE_PORT}
+      GAMES_SERVICE_HOST: ${GAMES_SERVICE_HOST}
+      AUTH_SERVICE_HOST: ${AUTH_SERVICE_HOST}
     command: npm run start:dev
+    networks:
+      - game-hub
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq-server
+    container_name: rabbitmq-container
+    ports:
+      - '8080:15672'
+      - '5672:5672'
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/mnesia
+    restart: unless-stopped
     networks:
       - game-hub
 
 networks:
   game-hub:
     external: true
+
+volumes:
+  rabbitmq_data:
