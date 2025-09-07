@@ -1,12 +1,15 @@
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
   // Configura o gateway para escutar em HTTP
-  await app.listen(process.env.PORT || 3000, () => {
-    console.log('API Gateway is listening on port 3000');
+  const port = configService.get<number>('PORT', 3000);
+  await app.listen(port, () => {
+    console.log(`API Gateway is listening on port ${port}`);
   });
 }
 bootstrap();
