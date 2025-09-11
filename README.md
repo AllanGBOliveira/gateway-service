@@ -1,6 +1,6 @@
 # 🌐 Gateway Service
 
-API Gateway para arquitetura de microservices com **autenticação JWT** e **comunicação RabbitMQ**.
+API Gateway para arquitetura de microservices com **autenticação JWT**, **comunicação RabbitMQ** e **internacionalização (i18n)**.
 
 ## 🎯 O que faz
 
@@ -8,6 +8,7 @@ API Gateway para arquitetura de microservices com **autenticação JWT** e **com
 - **Autenticação JWT** com validação via RabbitMQ
 - **Rotas protegidas** com guards automáticos
 - **Comunicação assíncrona** via RabbitMQ
+- **Internacionalização** (pt-BR, en-US) com resolução automática
 - **Docker** ready com hot reload
 
 ## ⚡ Quick Start
@@ -68,6 +69,33 @@ curl -X POST http://localhost:3000/auth/login \
   -d '{"email":"user@email.com","password":"senha123"}'
 ```
 
+## 🌍 Internacionalização (i18n)
+
+**Idiomas suportados:**
+- **Inglês (en-US)** - Padrão/Fallback
+- **Português (pt-BR)**
+
+**Como usar:**
+```bash
+# Padrão (inglês)
+curl http://localhost:3000/
+
+# Via query parameter
+curl "http://localhost:3000/?lang=pt-BR"
+
+# Via header Accept-Language
+curl -H "Accept-Language: pt-BR" http://localhost:3000/
+
+# Via header customizado
+curl -H "x-lang: pt-BR" http://localhost:3000/
+```
+
+**Resolução automática:**
+- Query parameter: `?lang=pt-BR`
+- Header: `Accept-Language: pt-BR`
+- Header customizado: `x-lang: pt-BR`
+- Fallback: `en-US`
+
 ## 🧪 Postman Collection
 
 **Arquivos:**
@@ -79,12 +107,15 @@ curl -X POST http://localhost:3000/auth/login \
 2. Configurar environment: `baseUrl = http://localhost:3000`
 3. Testar endpoints
 
-**Endpoints incluídos:**
+**Features:**
 - ✅ Health check
 - ✅ Auth (login, register, validate)
 - ✅ Users (CRUD completo com JWT)
 - ✅ Games (buscar, criar, deletar)
-- ✅ Testes automáticos (response time, JSON validation)
+- ✅ **Auto-login**: Token JWT salvo automaticamente
+- ✅ **Rotas autenticadas**: Token usado automaticamente
+- ✅ **Testes automáticos** (response time, JSON validation)
+- ✅ **Suporte i18n**: Headers de idioma configurados
 
 ## 🐳 Docker
 
@@ -178,6 +209,7 @@ Cliente HTTP → Gateway → JWT Guard → Microservice (RabbitMQ) → Response
 - **Docker** - Containerização
 - **JWT** - Autenticação
 - **ConfigService** - Configuração
+- **nestjs-i18n** - Internacionalização
 
 ## 🔍 Troubleshooting
 

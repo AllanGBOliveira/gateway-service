@@ -1,19 +1,17 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-  Inject,
-} from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Inject, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
+import { I18nService } from 'nestjs-i18n';
+import { Observable, firstValueFrom } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
+  private readonly logger = new Logger(JwtAuthGuard.name);
+
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
+    private readonly i18n: I18nService,
   ) {}
 
   canActivate(
@@ -23,23 +21,36 @@ export class JwtAuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('Token not found');
+      throw new UnauthorizedException(this.i18n.t('auth.TOKEN_NOT_FOUND'));
     }
 
-    // Validate token with auth microservice
     return this.authClient
       .send({ cmd: 'validate_token' }, { token })
       .pipe(
         map((result: any) => {
-          if (result && result.valid && result.user) {
-            // Attach user to request object
+          this.logger.debug('Auth service response:', JSON.stringify(result));
+          
+          if (result && result.valid === true && result.user) {
+            this.logger.debug('Token validation successful');
             request.user = result.user;
             return true;
           }
-          throw new UnauthorizedException('Invalid token');
+          
+          if (result && result.status === 'error') {
+            this.logger.debug('Auth service returned error:', result.message);
+            throw new UnauthorizedException(result.message || this.i18n.t('auth.TOKEN_INVALID'));
+          }
+          
+          if (result && result.valid === false) {
+            this.logger.debug('Token validation failed - invalid token');
+            throw new UnauthorizedException(this.i18n.t('auth.TOKEN_INVALID'));
+          }
+          
+          this.logger.debug('Unexpected response format:', result);
+          throw new UnauthorizedException(this.i18n.t('auth.TOKEN_INVALID'));
         }),
-        catchError(() => {
-          throw new UnauthorizedException('Token validation failed');
+        catchError((error) => {
+          throw new UnauthorizedException(this.i18n.t('auth.TOKEN_VALIDATION_FAILED'));
         }),
       );
   }
