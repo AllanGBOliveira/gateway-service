@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
 import { I18nService } from 'nestjs-i18n';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { of, throwError } from 'rxjs';
+import { Request } from 'express';
+import { AuthServiceError, CanActivateRequest } from 'types/auth';
 
 describe('JwtAuthGuard', () => {
   let guard: JwtAuthGuard;
-  let authClient: ClientProxy;
 
   const mockAuthClient = {
     send: jest.fn(),
@@ -40,14 +40,15 @@ describe('JwtAuthGuard', () => {
     }).compile();
 
     guard = module.get<JwtAuthGuard>(JwtAuthGuard);
-    authClient = module.get<ClientProxy>('AUTH_SERVICE');
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  const createMockExecutionContext = (headers: any = {}): ExecutionContext => {
+  const createMockExecutionContext = (
+    headers: Request['headers'],
+  ): ExecutionContext => {
     const mockRequest = {
       headers,
     };
@@ -87,7 +88,7 @@ describe('JwtAuthGuard', () => {
         expect(canActivate).toBe(true);
         expect(mockAuthClient.send).toHaveBeenCalledWith(
           { cmd: 'validate_token' },
-          { token: 'valid-jwt-token' }
+          { token: 'valid-jwt-token', lang: 'en' },
         );
       }
     });
@@ -96,7 +97,7 @@ describe('JwtAuthGuard', () => {
       const mockContext = createMockExecutionContext({});
 
       expect(() => guard.canActivate(mockContext)).toThrow(
-        new UnauthorizedException('Token not found')
+        new UnauthorizedException('Token not found'),
       );
     });
 
@@ -106,7 +107,7 @@ describe('JwtAuthGuard', () => {
       });
 
       expect(() => guard.canActivate(mockContext)).toThrow(
-        new UnauthorizedException('Token not found')
+        new UnauthorizedException('Token not found'),
       );
     });
 
@@ -134,9 +135,10 @@ describe('JwtAuthGuard', () => {
           });
           fail('Expected error but got success');
         }
-      } catch (error) {
-        expect(error).toBeInstanceOf(UnauthorizedException);
-        expect(error.message).toBe('Token validation failed');
+      } catch (error: unknown) {
+        const e = error as AuthServiceError;
+        expect(e).toBeInstanceOf(UnauthorizedException);
+        expect(e.message).toBe('Token validation failed');
       }
     });
 
@@ -146,7 +148,7 @@ describe('JwtAuthGuard', () => {
       });
 
       mockAuthClient.send.mockReturnValue(
-        throwError(() => new Error('Auth service error'))
+        throwError(() => new Error('Auth service error')),
       );
 
       const result = guard.canActivate(mockContext);
@@ -161,14 +163,17 @@ describe('JwtAuthGuard', () => {
           });
           fail('Expected error but got success');
         }
-      } catch (error) {
-        expect(error).toBeInstanceOf(UnauthorizedException);
-        expect(error.message).toBe('Token validation failed');
+      } catch (error: unknown) {
+        const e = error as AuthServiceError;
+        expect(e).toBeInstanceOf(UnauthorizedException);
+        expect(e.message).toBe('Token validation failed');
       }
     });
 
     it('should attach user to request when token is valid', async () => {
-      const mockRequest: any = { headers: { authorization: 'Bearer valid-token' } };
+      const mockRequest = {
+        headers: { authorization: 'Bearer valid-token' },
+      } as CanActivateRequest;
       const mockContext = {
         switchToHttp: () => ({
           getRequest: () => mockRequest,

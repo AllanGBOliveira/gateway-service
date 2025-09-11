@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 export interface LoginDto {
   email: string;
   password: string;
@@ -39,4 +41,33 @@ export interface AuthResponse {
 export interface UsersResponse {
   users: User[];
   count: number;
+}
+
+export interface ValidateTokenRequest {
+  token: string;
+  lang?: string;
+}
+
+export interface ValidateTokenResponse {
+  valid: boolean;
+  user?: Partial<User>;
+  error?: string;
+  message?: string;
+}
+
+export interface AuthServiceError {
+  status: 'error';
+  message: string;
+}
+
+export type AuthServiceResponse = ValidateTokenResponse | AuthServiceError;
+
+export interface RabbitMQError {
+  code?: string;
+  name?: string;
+  message?: string;
+}
+
+export interface CanActivateRequest extends Request {
+  user?: Parial<User>;
 }

@@ -1,7 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as path from 'path';
-import { I18nModule, AcceptLanguageResolver, QueryResolver, HeaderResolver } from 'nestjs-i18n';
+import {
+  I18nModule,
+  AcceptLanguageResolver,
+  QueryResolver,
+  HeaderResolver,
+} from 'nestjs-i18n';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -14,7 +19,7 @@ import { GamesModule } from './games/games.module';
       envFilePath: '.env',
     }),
     I18nModule.forRootAsync({
-      useFactory: (configService: ConfigService) => ({
+      useFactory: () => ({
         fallbackLanguage: 'en-US',
         loaderOptions: {
           path: path.join(__dirname, '/i18n/'),
