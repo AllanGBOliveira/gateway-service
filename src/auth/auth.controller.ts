@@ -10,12 +10,6 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  Get,
-  UseGuards,
-  Request,
-  Param,
-  Patch,
-  Delete,
   Inject,
   Logger
 } from '@nestjs/common';
@@ -29,7 +23,7 @@ import type {
   AuthResponse,
   User,
   UsersResponse
-} from 'types/auth';
+} from '../../types/auth.d';
 
 @Controller()
 export class AuthController {
@@ -44,19 +38,19 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('auth/login')
   login(@Body() loginDto: LoginDto): Promise<AuthResponse> {
-    console.log('Login request received in gateway:', loginDto);
+    this.logger.log('Login request received in gateway', { email: loginDto.email });
     return this.clientAuth.send({ cmd: 'login' }, loginDto).toPromise();
   }
 
   @Post('auth/register')
   register(@Body() registerDto: RegisterDto): Promise<AuthResponse> {
-    console.log('Register request received in gateway:', registerDto);
+    this.logger.log('Register request received in gateway', { email: registerDto.email, name: registerDto.name });
     return this.clientAuth.send({ cmd: 'register' }, registerDto).toPromise();
   }
 
   @Post('auth/validate')
   validateToken(@Body() payload: ValidateTokenDto): Promise<{ user: User; valid: boolean }> {
-    console.log('Token validation request received in gateway');
+    this.logger.log('Token validation request received in gateway');
     return this.clientAuth.send({ cmd: 'validate_token' }, payload).toPromise();
   }
 
@@ -70,7 +64,7 @@ export class AuthController {
   @Get('users')
   @UseGuards(JwtAuthGuard)
   findAllUsers(@Request() req: any): Promise<UsersResponse> {
-    console.log('Find all users request received in gateway');
+    this.logger.log('Find all users request received in gateway');
     return this.clientAuth.send({ cmd: 'find_all_users' }, {
       token: req.headers?.authorization,
       user: req.user
@@ -80,7 +74,7 @@ export class AuthController {
   @Get('users/profile')
   @UseGuards(JwtAuthGuard)
   getUserProfile(@Request() req: any): Promise<User> {
-    console.log('Get user profile request received in gateway');
+    this.logger.log('Get user profile request received in gateway');
     return this.clientAuth.send({ cmd: 'get_user_profile' }, {
       token: req.headers?.authorization,
       user: req.user
@@ -90,7 +84,7 @@ export class AuthController {
   @Get('users/:id')
   @UseGuards(JwtAuthGuard)
   findUserById(@Param('id') id: string, @Request() req: any): Promise<User> {
-    console.log('Find user by ID request received in gateway:', id);
+    this.logger.log('Find user by ID request received in gateway', { userId: id });
     return this.clientAuth.send({ cmd: 'find_user_by_id' }, {
       id,
       token: req.headers?.authorization,
@@ -105,7 +99,7 @@ export class AuthController {
     @Body() updateUserDto: UpdateUserDto,
     @Request() req: any
   ): Promise<User> {
-    console.log('Update user request received in gateway:', id, updateUserDto);
+    this.logger.log('Update user request received in gateway', { userId: id, updateData: updateUserDto });
     return this.clientAuth.send({ cmd: 'update_user' }, {
       id,
       updateUserDto,
@@ -117,7 +111,7 @@ export class AuthController {
   @Delete('users/:id')
   @UseGuards(JwtAuthGuard)
   deleteUser(@Param('id') id: string, @Request() req: any): Promise<{ message: string; deletedUser: User }> {
-    console.log('Delete user request received in gateway:', id);
+    this.logger.log('Delete user request received in gateway', { userId: id });
     return this.clientAuth.send({ cmd: 'delete_user' }, {
       id,
       token: req.headers?.authorization,
