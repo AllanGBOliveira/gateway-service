@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { ClientProxy } from '@nestjs/microservices';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { I18nService } from 'nestjs-i18n';
 import { of } from 'rxjs';
 
 describe('AuthController', () => {
@@ -16,6 +17,10 @@ describe('AuthController', () => {
     canActivate: jest.fn(() => true),
   };
 
+  const mockI18nService = {
+    t: jest.fn((key: string) => key),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
@@ -27,6 +32,10 @@ describe('AuthController', () => {
         {
           provide: JwtAuthGuard,
           useValue: mockJwtAuthGuard,
+        },
+        {
+          provide: I18nService,
+          useValue: mockI18nService,
         },
       ],
     }).compile();

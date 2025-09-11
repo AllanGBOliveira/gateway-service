@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { I18nService } from 'nestjs-i18n';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { of, throwError } from 'rxjs';
 
@@ -12,6 +13,17 @@ describe('JwtAuthGuard', () => {
     send: jest.fn(),
   };
 
+  const mockI18nService = {
+    t: jest.fn((key: string) => {
+      const translations: Record<string, string> = {
+        'auth.TOKEN_NOT_FOUND': 'Token not found',
+        'auth.TOKEN_INVALID': 'Invalid token',
+        'auth.TOKEN_VALIDATION_FAILED': 'Token validation failed',
+      };
+      return translations[key] || key;
+    }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -19,6 +31,10 @@ describe('JwtAuthGuard', () => {
         {
           provide: 'AUTH_SERVICE',
           useValue: mockAuthClient,
+        },
+        {
+          provide: I18nService,
+          useValue: mockI18nService,
         },
       ],
     }).compile();

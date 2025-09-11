@@ -1,8 +1,8 @@
 {
   "info": {
     "name": "Gateway Service API",
-    "description": "Collection for Gateway Service - Auth + Games microservices via RabbitMQ",
-    "version": "2.0.0",
+    "description": "Collection for Gateway Service - Auth + Games microservices via RabbitMQ with i18n support",
+    "version": "3.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -27,7 +27,7 @@
       "name": "Health Check",
       "item": [
         {
-          "name": "Get Hello",
+          "name": "Get Hello (Default - English)",
           "request": {
             "method": "GET",
             "header": [],
@@ -36,7 +36,32 @@
               "host": ["{{baseUrl}}"],
               "path": [""]
             },
-            "description": "Health check endpoint that returns a hello message"
+            "description": "Health check endpoint that returns a hello message in English (default)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Hello (Portuguese)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "pt-BR"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/?lang=pt-BR",
+              "host": ["{{baseUrl}}"],
+              "path": [""],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "pt-BR"
+                }
+              ]
+            },
+            "description": "Health check endpoint that returns a hello message in Portuguese"
           },
           "response": []
         },
@@ -86,11 +111,22 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "if (pm.response.code === 200) {",
+                  "pm.test('Login successful', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
                   "    const response = pm.response.json();",
                   "    if (response.access_token) {",
                   "        pm.collectionVariables.set('authToken', response.access_token);",
-                  "        console.log('Auth token saved from login');",
+                  "        pm.environment.set('authToken', response.access_token);",
+                  "        console.log('✅ Auth token saved automatically from login');",
+                  "        console.log('Token:', response.access_token.substring(0, 20) + '...');",
+                  "    }",
+                  "    if (response.user && response.user.id) {",
+                  "        pm.collectionVariables.set('userId', response.user.id);",
+                  "        pm.environment.set('userId', response.user.id);",
+                  "        console.log('✅ User ID saved:', response.user.id);",
                   "    }",
                   "}"
                 ],
@@ -126,11 +162,22 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "if (pm.response.code === 201) {",
+                  "pm.test('Registration successful', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
                   "    const response = pm.response.json();",
                   "    if (response.access_token) {",
                   "        pm.collectionVariables.set('authToken', response.access_token);",
-                  "        console.log('Auth token saved from register');",
+                  "        pm.environment.set('authToken', response.access_token);",
+                  "        console.log('✅ Auth token saved automatically from register');",
+                  "        console.log('Token:', response.access_token.substring(0, 20) + '...');",
+                  "    }",
+                  "    if (response.user && response.user.id) {",
+                  "        pm.collectionVariables.set('userId', response.user.id);",
+                  "        pm.environment.set('userId', response.user.id);",
+                  "        console.log('✅ User ID saved:', response.user.id);",
                   "    }",
                   "}"
                 ],
@@ -184,7 +231,24 @@
             },
             "description": "Get all users (requires JWT authentication)"
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Protected route accessible with token', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test('Token is being used', function () {",
+                  "    pm.expect(pm.request.headers.get('Authorization')).to.include('Bearer');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "Get User Profile",
@@ -385,9 +449,12 @@
           "    pm.expect(pm.response.responseTime).to.be.below(5000);",
           "});",
           "",
-          "pm.test('Response has valid JSON body', function () {",
-          "    pm.response.to.have.jsonBody();",
-          "});"
+          "// Skip JSON validation for non-JSON responses",
+          "if (pm.response.headers.get('Content-Type') && pm.response.headers.get('Content-Type').includes('application/json')) {",
+          "    pm.test('Response has valid JSON body', function () {",
+          "        pm.response.to.have.jsonBody();",
+          "    });",
+          "}"
         ]
       }
     }

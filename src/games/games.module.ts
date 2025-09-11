@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GamesController } from './games.controller';
+import { GamesService } from './games.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 
@@ -25,7 +26,7 @@ import { ConfigService } from '@nestjs/config';
     ]),
   ],
   controllers: [GamesController],
-  providers: [],
+  providers: [GamesService],
   exports: [ClientsModule],
 })
 export class GamesModule {}

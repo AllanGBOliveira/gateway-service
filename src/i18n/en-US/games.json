@@ -1,0 +1,21 @@
+{
+  "GAME_CREATED": "Game created successfully",
+  "GAME_UPDATED": "Game updated successfully",
+  "GAME_DELETED": "Game deleted successfully",
+  "GAME_NOT_FOUND": "Game not found",
+  "GAME_ALREADY_EXISTS": "Game already exists",
+  "INVALID_GAME_DATA": "Invalid game data",
+  "GAME_LIST_EMPTY": "No games found",
+  "GAME_FETCH_ERROR": "Error fetching games",
+  "GAME_CREATE_ERROR": "Error creating game",
+  "GAME_UPDATE_ERROR": "Error updating game",
+  "GAME_DELETE_ERROR": "Error deleting game",
+  "TITLE_REQUIRED": "Title is required",
+  "DESCRIPTION_REQUIRED": "Description is required",
+  "INVALID_GAME_ID": "Invalid game ID",
+  "LOG_SENDING_GAME_DETAILS_REQUEST": "Gateway sending request for game details",
+  "LOG_RECEIVED_GAME_DETAILS": "Gateway received game details",
+  "LOG_ERROR_FETCHING_GAME_DETAILS": "Error fetching game details",
+  "LOG_EMITTING_GAME_CREATED_EVENT": "Gateway emitting game_created event",
+  "LOG_EMITTING_GAME_DELETED_EVENT": "Gateway emitting game_deleted event"
+}
