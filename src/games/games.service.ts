@@ -1,6 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { I18nService } from 'nestjs-i18n';
+import { I18nService, I18nContext } from 'nestjs-i18n';
 import { catchError, map, timeout } from 'rxjs/operators';
 import { throwError, firstValueFrom, Observable } from 'rxjs';
 
@@ -15,7 +15,10 @@ export class GamesService {
 
   async getGameDetails(id: string): Promise<any> {
     const pattern = { cmd: 'get_game_details' };
-    const payload = id;
+    const payload = {
+      id,
+      lang: I18nContext.current()?.lang || 'en'
+    };
 
     this.logger.log(this.i18n.t('games.LOG_SENDING_GAME_DETAILS_REQUEST'), { gameId: id });
 
@@ -42,7 +45,10 @@ export class GamesService {
     const eventPattern = 'game_created';
     this.logger.log(this.i18n.t('games.LOG_EMITTING_GAME_CREATED_EVENT'), { gameData });
 
-    this.client.emit(eventPattern, gameData);
+    this.client.emit(eventPattern, {
+      ...gameData,
+      lang: I18nContext.current()?.lang || 'en'
+    });
 
     return { 
       message: this.i18n.t('games.GAME_CREATED')
@@ -53,7 +59,10 @@ export class GamesService {
     const eventPattern = 'game_deleted';
     this.logger.log(this.i18n.t('games.LOG_EMITTING_GAME_DELETED_EVENT'), { gameId: id });
 
-    this.client.emit(eventPattern, id);
+    this.client.emit(eventPattern, {
+      id,
+      lang: I18nContext.current()?.lang || 'en'
+    });
 
     return { 
       message: this.i18n.t('games.GAME_DELETED')

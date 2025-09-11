@@ -8,7 +8,8 @@ API Gateway para arquitetura de microservices com **autenticação JWT**, **comu
 - **Autenticação JWT** com validação via RabbitMQ
 - **Rotas protegidas** com guards automáticos
 - **Comunicação assíncrona** via RabbitMQ
-- **Internacionalização** (pt-BR, en-US) com resolução automática
+- **Internacionalização** (en, pt-BR) com resolução automática
+- **Arquitetura Service Pattern** (Controller → Service → RabbitMQ)
 - **Docker** ready com hot reload
 
 ## ⚡ Quick Start
@@ -72,29 +73,32 @@ curl -X POST http://localhost:3000/auth/login \
 ## 🌍 Internacionalização (i18n)
 
 **Idiomas suportados:**
-- **Inglês (en-US)** - Padrão/Fallback
+- **Inglês (en)** - Padrão/Fallback
 - **Português (pt-BR)**
 
 **Como usar:**
 ```bash
 # Padrão (inglês)
-curl http://localhost:3000/
+curl http://localhost:3000/auth/login -d '{"email":"john@example.com","password":"password123"}'
 
 # Via query parameter
-curl "http://localhost:3000/?lang=pt-BR"
+curl "http://localhost:3000/auth/login?lang=pt-BR" -d '{"email":"john@example.com","password":"password123"}'
 
 # Via header Accept-Language
-curl -H "Accept-Language: pt-BR" http://localhost:3000/
+curl -H "Accept-Language: pt-BR" http://localhost:3000/auth/login -d '{"email":"john@example.com","password":"password123"}'
 
 # Via header customizado
-curl -H "x-lang: pt-BR" http://localhost:3000/
+curl -H "x-lang: pt-BR" http://localhost:3000/auth/login -d '{"email":"john@example.com","password":"password123"}'
 ```
 
 **Resolução automática:**
 - Query parameter: `?lang=pt-BR`
 - Header: `Accept-Language: pt-BR`
 - Header customizado: `x-lang: pt-BR`
-- Fallback: `en-US`
+- Fallback: `en`
+
+**Gateway → Microservice:**
+O gateway automaticamente inclui `lang` em todos os payloads RabbitMQ para que microservices retornem mensagens traduzidas.
 
 ## 🧪 Postman Collection
 
@@ -159,15 +163,31 @@ npm run test:e2e
 npm run test:cov
 ```
 
-## 🔌 Microservices
+## 🏗️ Arquitetura
 
-**Comunicação via RabbitMQ:**
-- **Auth Service** → `auth_queue`
+**Service Pattern:**
+```
+Controller → Service → RabbitMQ → Microservice
+```
+
+**AuthController → AuthService:**
+- `login()`, `register()`, `validateToken()`
+- `findAllUsers()`, `getUserProfile()`, `findUserById()`
+- `updateUser()`, `deleteUser()`, `healthCheck()`
+
+**GamesController → GamesService:**
+- `getGameDetails()`, `createGame()`, `deleteGame()`
+
+**Comunicação RabbitMQ:**
+- **Auth Service** → `auth_queue` (durable: true)
 - **Games Service** → `games_queue`
 
 **Padrão híbrido:**
 - **Request-Response** → Rotas síncronas (GET, autenticação)
 - **Event Pattern** → Rotas assíncronas (POST, eventos)
+
+**I18n Integration:**
+Todos os payloads RabbitMQ incluem `lang: I18nContext.current()?.lang || 'en'`
 
 ## 📋 Variáveis de Ambiente
 
@@ -189,27 +209,109 @@ GAMES_SERVICE_HOST=games-service
 GAMES_SERVICE_PORT=3002
 ```
 
-## 🏗️ Arquitetura
+## 🔧 Estrutura do Projeto
 
 ```
-Cliente HTTP → Gateway → JWT Guard → Microservice (RabbitMQ) → Response
+src/
+├── auth/
+│   ├── auth.controller.ts    # Rotas HTTP
+│   ├── auth.service.ts       # Lógica RabbitMQ + I18n
+│   ├── auth.module.ts        # DI + ClientsModule
+│   └── jwt-auth.guard.ts     # JWT validation
+├── games/
+│   ├── games.controller.ts   # Rotas HTTP
+│   ├── games.service.ts      # Lógica RabbitMQ + I18n
+│   └── games.module.ts       # DI + ClientsModule
+├── i18n/
+│   ├── en-US/               # Traduções inglês
+│   └── pt-BR/               # Traduções português
+├── app.module.ts            # I18nModule + ConfigModule
+└── main.ts                  # Bootstrap
 ```
 
-**Fluxo de autenticação:**
-1. Cliente faz login → recebe JWT
-2. Rotas protegidas → Gateway valida JWT via Auth Service
-3. JWT válido → encaminha para microservice responsável
-4. JWT inválido → retorna 401 Unauthorized
+## 🔄 Fluxos
+
+**Autenticação:**
+```
+Cliente → Gateway → AuthService → RabbitMQ → Auth Microservice
+                ↓
+            JWT Token + Translated Message
+```
+
+**Rotas Protegidas:**
+```
+Cliente + JWT → JwtAuthGuard → AuthService → RabbitMQ → Auth Microservice
+                    ↓              ↓
+               Validation      Lang Context
+```
+
+**I18n Flow:**
+```
+HTTP Headers → I18nResolver → I18nContext → Service → RabbitMQ Payload
+(Accept-Language)                                        {data, lang}
+```
 
 ## 📚 Tech Stack
 
 - **NestJS** - Framework Node.js
 - **TypeScript** - Linguagem tipada
-- **RabbitMQ** - Message broker
+- **RabbitMQ** - Message broker (durable queues)
 - **Docker** - Containerização
 - **JWT** - Autenticação
 - **ConfigService** - Configuração
 - **nestjs-i18n** - Internacionalização
+- **Service Pattern** - Arquitetura limpa
+
+## 🚧 TODO: Paginação e Filtros
+
+**Para implementar amanhã:**
+
+### **Paginação:**
+```bash
+GET /users?page=1&limit=10&offset=0
+```
+
+### **Filtros:**
+```bash
+# Busca
+GET /users?search=john
+
+# Ordenação
+GET /users?orderBy=name&order=asc
+
+# Status/Role
+GET /users?status=active&role=admin
+
+# Combinado
+GET /users?page=1&limit=5&search=john&orderBy=createdAt&order=desc&role=user
+```
+
+### **Implementação:**
+1. ✅ DTOs criados (`QueryDto`, `PaginationDto`, `FilterDto`)
+2. ⏳ Instalar `class-transformer` dependency
+3. ⏳ Atualizar AuthController com `@Query()` 
+4. ⏳ Atualizar AuthService para passar query params
+5. ⏳ Atualizar GamesController/Service
+6. ⏳ Microservices devem processar filtros/paginação
+7. ⏳ Testes com Postman
+
+### **Estrutura Query:**
+```typescript
+{
+  // Paginação
+  page?: number = 1,
+  limit?: number = 10,
+  offset?: number,
+  
+  // Filtros
+  search?: string,
+  orderBy?: string,
+  order?: 'asc' | 'desc' = 'asc',
+  status?: string,
+  role?: string,
+  category?: string
+}
+```
 
 ## 🔍 Troubleshooting
 
