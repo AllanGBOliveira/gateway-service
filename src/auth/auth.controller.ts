@@ -10,7 +10,14 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Get,
+  UseGuards,
+  Request,
+  Param,
+  Patch,
+  Delete,
   Inject,
+  Logger
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -26,6 +33,8 @@ import type {
 
 @Controller()
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     @Inject('AUTH_SERVICE') private readonly clientAuth: ClientProxy,
   ) {}
