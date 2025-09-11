@@ -25,7 +25,6 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     hostname: rabbitmq-server
-    container_name: rabbitmq-container
     ports:
       - '${RABBITMQ_DEFAULT_UI_PORT}:15672'
       - '${RABBITMQ_DEFAULT_PORT}:5672'
