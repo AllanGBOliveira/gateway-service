@@ -9,8 +9,7 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
   const port = configService.get<number>('PORT', 3000);
-  await app.listen(port, () => {
-    logger.log(`API Gateway is listening on port ${port}`);
-  });
+  await app.listen(port);
+  logger.log(`API Gateway is listening on port ${port}`);
 }
 bootstrap();

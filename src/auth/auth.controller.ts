@@ -9,7 +9,7 @@ import {
   Request,
   UseGuards,
   HttpCode,
-  HttpStatus
+  HttpStatus,
 } from '@nestjs/common';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthService } from './auth.service';
@@ -20,14 +20,14 @@ import type {
   ValidateTokenDto,
   AuthResponse,
   User,
-  UsersResponse
+  UsersResponse,
+  CanActivateRequest,
 } from '../../types/auth.d';
+import { extractTokenFromHeader } from '../../utils';
 
 @Controller()
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   // ========== PUBLIC ROUTES (No Authentication Required) ==========
 
@@ -43,7 +43,9 @@ export class AuthController {
   }
 
   @Post('auth/validate')
-  async validateToken(@Body() payload: ValidateTokenDto): Promise<{ user: User; valid: boolean }> {
+  async validateToken(
+    @Body() payload: ValidateTokenDto,
+  ): Promise<{ user: User; valid: boolean }> {
     return this.authService.validateToken(payload);
   }
 
@@ -56,22 +58,43 @@ export class AuthController {
 
   @Get('users')
   @UseGuards(JwtAuthGuard)
-  findAllUsers(@Request() req: any): Promise<UsersResponse> {
-    const token = req.headers?.authorization?.replace('Bearer ', '');
+  findAllUsers(@Request() req: CanActivateRequest): Promise<UsersResponse> {
+    const token = extractTokenFromHeader(req);
+    if (!token) {
+      throw new Error('Token not found');
+    }
+    if (!req.user) {
+      throw new Error('User not found');
+    }
     return this.authService.findAllUsers(token, req.user);
   }
 
   @Get('users/profile')
   @UseGuards(JwtAuthGuard)
-  getUserProfile(@Request() req: any): Promise<User> {
-    const token = req.headers?.authorization?.replace('Bearer ', '');
+  getUserProfile(@Request() req: CanActivateRequest): Promise<User> {
+    const token = extractTokenFromHeader(req);
+    if (!token) {
+      throw new Error('Token not found');
+    }
+    if (!req.user) {
+      throw new Error('User not found');
+    }
     return this.authService.getUserProfile(token, req.user);
   }
 
   @Get('users/:id')
   @UseGuards(JwtAuthGuard)
-  findUserById(@Param('id') id: string, @Request() req: any): Promise<User> {
-    const token = req.headers?.authorization?.replace('Bearer ', '');
+  findUserById(
+    @Param('id') id: string,
+    @Request() req: CanActivateRequest,
+  ): Promise<User> {
+    const token = extractTokenFromHeader(req);
+    if (!token) {
+      throw new Error('Token not found');
+    }
+    if (!req.user) {
+      throw new Error('User not found');
+    }
     return this.authService.findUserById(id, token, req.user);
   }
 
@@ -80,16 +103,31 @@ export class AuthController {
   updateUser(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @Request() req: any
+    @Request() req: CanActivateRequest,
   ): Promise<User> {
-    const token = req.headers?.authorization?.replace('Bearer ', '');
+    const token = extractTokenFromHeader(req);
+    if (!token) {
+      throw new Error('Token not found');
+    }
+    if (!req.user) {
+      throw new Error('User not found');
+    }
     return this.authService.updateUser(id, updateUserDto, token, req.user);
   }
 
   @Delete('users/:id')
   @UseGuards(JwtAuthGuard)
-  deleteUser(@Param('id') id: string, @Request() req: any): Promise<{ message: string; deletedUser: User }> {
-    const token = req.headers?.authorization?.replace('Bearer ', '');
+  deleteUser(
+    @Param('id') id: string,
+    @Request() req: CanActivateRequest,
+  ): Promise<{ message: string; deletedUser: User }> {
+    const token = extractTokenFromHeader(req);
+    if (!token) {
+      throw new Error('Token not found');
+    }
+    if (!req.user) {
+      throw new Error('User not found');
+    }
     return this.authService.deleteUser(id, token, req.user);
   }
 }

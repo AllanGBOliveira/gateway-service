@@ -69,5 +69,5 @@ export interface RabbitMQError {
 }
 
 export interface CanActivateRequest extends Request {
-  user?: Parial<User>;
+  user?: Partial<User>;
 }

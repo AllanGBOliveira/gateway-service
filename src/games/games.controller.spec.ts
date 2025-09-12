@@ -4,7 +4,6 @@ import { GamesService } from './games.service';
 
 describe('GamesController', () => {
   let controller: GamesController;
-  let gamesService: GamesService;
 
   const mockGamesService = {
     getGameDetails: jest.fn(),
@@ -24,7 +23,6 @@ describe('GamesController', () => {
     }).compile();
 
     controller = module.get<GamesController>(GamesController);
-    gamesService = module.get<GamesService>(GamesService);
   });
 
   afterEach(() => {
@@ -38,25 +36,24 @@ describe('GamesController', () => {
   describe('getGameDetails', () => {
     it('should call gamesService.getGameDetails', async () => {
       const gameId = 'game-123';
-      const expectedResponse = { id: gameId, title: 'Test Game' };
+      const mockResponse = { id: '1', name: 'Test Game' };
+      mockGamesService.getGameDetails.mockResolvedValue(mockResponse);
 
-      mockGamesService.getGameDetails.mockResolvedValue(expectedResponse);
-
-      const result = await controller.getGameDetails(gameId);
+      const result: unknown = await controller.getGameDetails(gameId);
 
       expect(mockGamesService.getGameDetails).toHaveBeenCalledWith(gameId);
-      expect(result).toEqual(expectedResponse);
+      expect(result).toEqual(mockResponse);
     });
   });
 
   describe('createGame', () => {
-    it('should call gamesService.createGame', async () => {
+    it('should call gamesService.createGame', () => {
       const gameData = { id: 'new-game-id', name: 'New Game' };
       const expectedResponse = { id: 'new-game-id', name: 'New Game' };
 
-      mockGamesService.createGame.mockResolvedValue(expectedResponse);
+      mockGamesService.createGame.mockReturnValue(expectedResponse);
 
-      const result = await controller.createGame(gameData);
+      const result = controller.createGame(gameData);
 
       expect(mockGamesService.createGame).toHaveBeenCalledWith(gameData);
       expect(result).toEqual(expectedResponse);
@@ -64,13 +61,13 @@ describe('GamesController', () => {
   });
 
   describe('deleteGame', () => {
-    it('should call gamesService.deleteGame', async () => {
+    it('should call gamesService.deleteGame', () => {
       const gameId = 'game-123';
       const expectedResponse = { message: 'Game deleted successfully' };
 
-      mockGamesService.deleteGame.mockResolvedValue(expectedResponse);
+      mockGamesService.deleteGame.mockReturnValue(expectedResponse);
 
-      const result = await controller.deleteGame(gameId);
+      const result = controller.deleteGame(gameId);
 
       expect(mockGamesService.deleteGame).toHaveBeenCalledWith(gameId);
       expect(result).toEqual(expectedResponse);

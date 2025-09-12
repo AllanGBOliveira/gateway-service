@@ -13,7 +13,7 @@ export class GamesService {
     private readonly i18n: I18nService,
   ) {}
 
-  async getGameDetails(id: string): Promise<any> {
+  async getGameDetails(id: string): Promise<unknown> {
     const pattern = { cmd: 'get_game_details' };
     const payload = {
       id,
@@ -25,7 +25,10 @@ export class GamesService {
     });
 
     try {
-      const gameDetails: Observable<any> = this.client.send(pattern, payload);
+      const gameDetails: Observable<unknown> = this.client.send(
+        pattern,
+        payload,
+      );
 
       const response = await firstValueFrom(gameDetails.pipe(timeout(5000)));
 
@@ -34,24 +37,25 @@ export class GamesService {
         response,
       });
       return response;
-    } catch (error) {
-      this.logger.error(
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+
+      this.logger.debug(
         this.i18n.t('games.LOG_ERROR_FETCHING_GAME_DETAILS'),
-        error.stack,
+        errorStack,
         { gameId: id },
       );
 
-      if (error.message.includes('timeout')) {
+      if (errorMessage.includes('timeout')) {
         throw new Error(this.i18n.t('common.TIMEOUT_ERROR'));
       }
       throw new Error(this.i18n.t('games.GAME_FETCH_ERROR'));
     }
   }
 
-  async createGame(gameData: {
-    id: string;
-    name: string;
-  }): Promise<{ message: string }> {
+  createGame(gameData: { id: string; name: string }): { message: string } {
     const eventPattern = 'game_created';
     this.logger.log(this.i18n.t('games.LOG_EMITTING_GAME_CREATED_EVENT'), {
       gameData,
@@ -67,7 +71,7 @@ export class GamesService {
     };
   }
 
-  async deleteGame(id: string): Promise<{ message: string }> {
+  deleteGame(id: string): { message: string } {
     const eventPattern = 'game_deleted';
     this.logger.log(this.i18n.t('games.LOG_EMITTING_GAME_DELETED_EVENT'), {
       gameId: id,
