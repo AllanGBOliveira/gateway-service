@@ -22,8 +22,8 @@ import { GamesModule } from './games/games.module';
       useFactory: () => ({
         fallbackLanguage: 'en-US',
         loaderOptions: {
-          path: path.join(__dirname, '/i18n/'),
-          watch: true,
+          path: path.join(__dirname, '../i18n/'),
+          watch: process.env.NODE_ENV !== 'production',
         },
       }),
       resolvers: [

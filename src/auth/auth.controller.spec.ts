@@ -3,6 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { I18nService } from 'nestjs-i18n';
+import type { CanActivateRequest } from '../../types/auth.d';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -150,10 +151,10 @@ describe('AuthController', () => {
   });
 
   describe('Protected Routes', () => {
-    const mockRequest = {
+    const mockRequest: CanActivateRequest = {
       headers: { authorization: 'Bearer jwt-token' },
       user: { id: '1', email: 'test@test.com' },
-    };
+    } as CanActivateRequest;
 
     it('should call findAllUsers', async () => {
       const expectedResponse = { users: [], count: 0 };

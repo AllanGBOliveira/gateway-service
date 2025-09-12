@@ -11,14 +11,14 @@ export class GamesController {
   }
 
   @Post()
-  async createGame(
-    @Body() gameData: { id: string; name: string },
-  ): Promise<{ message: string }> {
+  createGame(@Body() gameData: { id: string; name: string }): {
+    message: string;
+  } {
     return this.gamesService.createGame(gameData);
   }
 
   @Post(':id/delete')
-  async deleteGame(@Param('id') id: string): Promise<{ message: string }> {
+  deleteGame(@Param('id') id: string): { message: string } {
     return this.gamesService.deleteGame(id);
   }
 }
